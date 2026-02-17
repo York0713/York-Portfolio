@@ -46,7 +46,7 @@
   <section id="hero" class="d-flex flex-column justify-content-center align-items-center">
     <div class="hero-container" data-aos="fade-in">
       <h1>鄭楹學</h1>
-      <p><span class="typed" data-typed-items="我是來自聯合大學的資管人ヽ(・∀・)ﾉ, 也是松山機場工程師, Welcome! York's Portfolio"></span></p>
+      <p><span class="typed" data-typed-items="您好我來自苗栗ヽ(・∀・)ﾉ, 目前是松山機場工程師, Welcome to York's Portfolio"></span></p>
     </div>
 
   </section>
@@ -190,9 +190,9 @@
         <div class="section-title">
           <h2>目標規劃</h2>
           <p>
-            曾於資料庫程式設計課程實踐 
-            <a href="https://youtu.be/cf6F_d64Acs" target="_blank" class="fw-bold" style="color: #0563af;">
-              <i class="bi bi-youtube"></i> 醫院掛號系統專案
+            由白沙屯媽祖為題，設計專案
+            <a href="https://www.youtube.com/watch?v=8eKtsBDp2b0&t=60s" target="_blank" class="fw-bold" style="color: #0563af;">
+              <i class="bi bi-youtube"></i> 隨媽祖進香趣
             </a>，期望於未來達成以下里程：
           </p>
         </div>
@@ -258,51 +258,55 @@
 
 <script src="/static/js/main.js"></script>
 <script src="https://unpkg.com/imagesloaded@5/imagesloaded.pkgd.min.js"></script>
+<script src="https://unpkg.com/isotope-layout@3/dist/isotope.pkgd.min.js"></script>
 
 <script>
-  window.addEventListener('load', () => {
-    let portfolioContainer = document.querySelector('.portfolio-container');
-    let portfolioFilters = document.querySelectorAll('#portfolio-flters li');
-
-    if (portfolioContainer) {
-      // 1. 初始化 Isotope (維持原有的排版形式，只加入初始過濾)
-      let portfolioIsotope = new Isotope(portfolioContainer, {
-        itemSelector: '.portfolio-item',
-        filter: '.filter-app' // 一開始只顯示生活照
-      });
-
-      // 2. 點擊分類切換
-      portfolioFilters.forEach(el => {
-        el.addEventListener('click', function(e) {
-          e.preventDefault();
-          
-          // 切換 Active 狀態
-          portfolioFilters.forEach(li => li.classList.remove('filter-active'));
-          this.classList.add('filter-active');
-
-          // 執行過濾
-          portfolioIsotope.arrange({
-            filter: this.getAttribute('data-filter')
-          });
-
-          // 當照片切換導致高度變動時，強制讓下方的「里程」顯現
-          portfolioIsotope.on('arrangeComplete', function () {
-            if (typeof AOS !== 'undefined') {
-              AOS.refresh();
-            }
-          });
-        });
-      });
+  // 使用 window.onload 確保所有資源（包含套件與圖片）都下載完了才執行
+  window.onload = function() {
+    const container = document.querySelector('.portfolio-container');
+    const filters = document.querySelectorAll('#portfolio-flters li');
+    
+    if (!container || typeof Isotope === 'undefined') {
+      console.error("Isotope 套件載入失敗或找不到容器！");
+      return;
     }
-  });
+
+    // 2. 初始化：移除 fitRows 以維持原本排版
+    const iso = new Isotope(container, {
+      itemSelector: '.portfolio-item',
+      filter: '.filter-app', // 初始顯示生活照
+      transitionDuration: '0.6s'
+      // 這裡不寫 layoutMode，它就會用原本預設的排列方式
+    });
+
+    // 3. 解決重疊：圖片每載入一張就重排一次
+    imagesLoaded(container).on('progress', function() {
+      iso.layout();
+    });
+
+    // 4. 點擊分類邏輯
+    filters.forEach(el => {
+      el.addEventListener('click', function(e) {
+        e.preventDefault();
+        
+        // 切換按鈕顏色
+        filters.forEach(li => li.classList.remove('filter-active'));
+        this.classList.add('filter-active');
+
+        // 執行過濾
+        const filterValue = this.getAttribute('data-filter');
+        iso.arrange({ filter: filterValue });
+
+        // 修正下方里程碑(AOS)消失的問題
+        if (typeof AOS !== 'undefined') {
+          setTimeout(() => { AOS.refresh(); }, 500);
+        }
+      });
+    });
+  };
 </script>
 
 <style>
-  /* 為了配合一開始只顯示生活照，防止載入瞬間閃爍 */
-  .portfolio-item:not(.filter-app) {
-    display: none;
-  }
-  
   /* 確保「里程」區塊不會因為動畫偵測失敗而消失 */
   #services {
     opacity: 1 !important;
